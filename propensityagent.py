@@ -111,4 +111,102 @@ def evaluate_rules(client):
 
     if recent_incident:
         recommendations.append({
-            "Solutio
+            "Solution Area": "SecOps",
+            "Primary Offer": "Security Copilot Accelerator (including Agentic)",
+            "Follow-up Offer": "Unified Threat Protection (Sentinel, TI, Defender XDR, Copilot)",
+            "Rationale": "Recent incident suggests detection and response gaps. AI-assisted Security Copilot accelerator enables faster triage and remediation.",
+            "Timeline": "3–4 weeks"
+        })
+
+    # === Cloud Security Recommendations ===
+    if multicloud and cloud_maturity in ["medium", "low"]:
+        recommendations.append({
+            "Solution Area": "Cloud Security",
+            "Primary Offer": "Cloud Security Optimization (CSPM)",
+            "Follow-up Offer": "Cloud Security Modernization (CWPP)",
+            "Rationale": "Detected multi-cloud setup with incomplete CSPM/CWPP coverage. Optimize visibility and modernize workload protection.",
+            "Timeline": "4–6 weeks"
+        })
+
+    elif propensity >= 60 and cloud_maturity == "high":
+        recommendations.append({
+            "Solution Area": "Cloud Security",
+            "Primary Offer": "Cloud Security Modernization (CWPP)",
+            "Follow-up Offer": "Cloud Security Optimization (CSPM)",
+            "Rationale": "High E5 readiness and mature cloud environment. Focus on CWPP to secure workloads and containers at scale.",
+            "Timeline": "4–6 weeks"
+        })
+
+    # === Cross Solution Recommendations ===
+    if propensity >= 70 and len(recommendations) >= 3:
+        recommendations.append({
+            "Solution Area": "Cross-Solution Security",
+            "Primary Offer": "Zero Trust Maturity Roadmap",
+            "Follow-up Offer": "Microsoft Security Factory Integration",
+            "Rationale": "Multiple security signals detected. Recommend cross-solution Zero Trust roadmap to align IAM, SecOps, Data, and Cloud modernization.",
+            "Timeline": "6–8 weeks"
+        })
+
+    return recommendations
+
+
+# -----------------------
+# STREAMLIT UI
+# -----------------------
+
+st.set_page_config(page_title="Microsoft Security Recommendation Agent", page_icon="🧠", layout="wide")
+st.title("🧠 Microsoft Security Recommendation Agent")
+st.markdown("Generate intelligent solution recommendations based on E3/E5 propensity and security posture across IAM, SecOps, Data & AI, and Cloud Security.")
+
+with st.form("client_form"):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        client_name = st.text_input("Client Name", "Contoso Ltd")
+        e5_propensity = st.slider("E5 Propensity (%)", 0, 100, 75)
+        industry = st.selectbox("Industry", ["General", "Finance", "Healthcare", "Energy", "Manufacturing", "Retail"])
+    with col2:
+        identity_maturity = st.selectbox("Identity Maturity", ["Weak", "Average", "Good", "Strong"])
+        defender_active = st.checkbox("Defender Active?", True)
+        sentinel_active = st.checkbox("Sentinel Active?", False)
+        data_risk = st.selectbox("Data Risk Level", ["Low", "Medium", "High", "Very High"])
+    with col3:
+        recent_incident = st.checkbox("Recent Security Incident?", False)
+        multicloud = st.checkbox("Multi-Cloud Environment?", False)
+        cloud_maturity = st.selectbox("Cloud Maturity", ["Low", "Medium", "High"])
+    submitted = st.form_submit_button("Generate Recommendations")
+
+if submitted:
+    client_data = {
+        "client_name": client_name,
+        "e5_propensity": e5_propensity,
+        "identity_maturity": identity_maturity,
+        "defender_active": defender_active,
+        "sentinel_active": sentinel_active,
+        "industry": industry,
+        "recent_incident": recent_incident,
+        "multicloud": multicloud,
+        "data_risk": data_risk,
+        "cloud_maturity": cloud_maturity
+    }
+
+    recs = evaluate_rules(client_data)
+    st.subheader(f"🔎 Recommendations for {client_name}")
+
+    if not recs:
+        st.info("No specific recommendations found for this profile. Try adjusting the inputs.")
+    else:
+        for rec in recs:
+            with st.expander(f"✅ {rec['Solution Area']} – {rec['Primary Offer']}"):
+                st.write(f"**Follow-up Offer:** {rec['Follow-up Offer']}")
+                st.write(f"**Rationale:** {rec['Rationale']}")
+                st.write(f"**Timeline:** {rec['Timeline']}")
+
+    st.markdown("---")
+    st.subheader("📦 Offer Catalog")
+    for category, offers in OFFER_CATALOG.items():
+        with st.expander(f"{category}"):
+            for offer in offers:
+                st.write(f"- {offer}")
+
+st.markdown("---")
+st.caption("Avanade | Microsoft Security Sales Intelligence Assistant – powered by Streamlit 🚀")
