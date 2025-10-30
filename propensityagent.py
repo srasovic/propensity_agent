@@ -156,7 +156,7 @@ def evaluate_rules(client):
 
 st.set_page_config(page_title="Microsoft Security Recommendation Agent", page_icon="🧠", layout="wide")
 st.title("🧠 Microsoft Security Recommendation Agent")
-st.markdown("Generate intelligent solution recommendations based on E3/E5 propensity and security posture across IAM, SecOps, Data & AI, and Cloud Security.")
+st.markdown("Generate intelligent solution recommendations based on E3/E5 propensity and security posture across IAM, SecOps, Data & AI, and Cloud Security. - Sasha Rasovic")
 
 with st.form("client_form"):
     col1, col2, col3 = st.columns(3)
